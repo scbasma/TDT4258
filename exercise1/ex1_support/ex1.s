@@ -144,9 +144,15 @@ _enable_interrupts:
 
 	str r1, [r2, #0]
 
-	ldr r2, gpio_pa_base		
+	ldr r2, gpio_pa_base
 	
-	WFI
+	mov r3, #0b110
+
+	ldr r1, scr
+
+	str r3, [r1, #0]
+
+	wfi
 
 
 gpio_pc_model:
@@ -175,6 +181,12 @@ isero:
 exception_return_to_thread_constant:
 	.long EXCEPTION_RETURN_TO_THREAD_CONSTANT
 
+emu_base:
+	.long EMU_BASE
+
+scr:
+	.long SCR
+
 
 	/////////////////////////////////////////////////////////////////////////////
 	//
@@ -184,7 +196,11 @@ exception_return_to_thread_constant:
 	/////////////////////////////////////////////////////////////////////////////
 	
         .thumb_func
-gpio_handler:  
+gpio_handler:
+    
+    mov r7, #0xff
+    ldr r3, gpio_base
+    str r7, [r3, #GPIO_IFC]	  
     ldr r1, [r5, #GPIO_DIN]
     lsl r1, r1, #8
     str r1, [r2, #GPIO_DOUT]
