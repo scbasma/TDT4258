@@ -122,15 +122,76 @@ _reset:
 
 	str r4, [r5, #GPIO_DOUT]
 
+	// Setting initial value in output registers
+
+	mov r4, #1
+
+	lsl r4, r4, #8
+
+	mvn r4, r4 
+
 _polling_loop:
 
 	ldr r1, [r5, #GPIO_DIN]
 
-	lsl r1, r1, #8
+	mov r6, #0x10 // Mask for detecting button press on button 5
 
-	str r1, [r2, #GPIO_DOUT]
+  mov r7, #0x40 // Mask for detecting button press on button 7
+
+	and r3, r1, r6 
+
+	cbz r3, _handle_button_5 // Button 5 is pressed if bit 4 is 0
+
+	and r3, r1, r7
+
+	cbz r3, _handle_button_7 // Button 5 is pressed if bit 4 is 0
+
+	str r4, [r2, #GPIO_DOUT]
 
 	B _polling_loop
+
+
+
+_handle_button_5:
+	
+	lsr r4, r4, #8 // Moving output vector into the first 8 bit of the register
+
+  mov r8, #0xff // Mask for extracting only the bits of the output vector
+
+	and r4, r4, r8 // Does extraction
+
+	mov r8, #0x01 // Mask for extracting bit 0 in the output vector
+
+	and r8, r8, r4 // Does extraction
+
+	lsl r4, r4, #7 // Moving the output vector back to the output window shifted one bit to the right 
+
+	lsl r8, r8, #15 // Movong the first bit of the output vector to last position 
+
+  and r4, r4, r8 // Adding the last bit to the output word
+
+	bx lr
+
+_handle_button_7:
+	
+	lsr r4, r4, #8 // Moving output vector into the first 8 bit of the register
+
+  mov r8, #0xff // Mask for extracting only the bits of the output vector
+
+	and r4, r4, r8 // Does extraction
+
+	mov r8, #0x80 // Mask for extracting bit 7 in the output vector
+
+	and r8, r8, r4 // Does extraction
+
+	lsl r4, r4, #9 // Moving the output vector back to the output window shifted one bit to the left
+
+	lsl r8, r8, #1 // Movong the first bit of the output vector to last position 
+
+  and r4, r4, r8 // Adding the last bit to the output word
+
+	bx lr
+
 
 
 gpio_pc_model:
