@@ -172,7 +172,7 @@ _handle_button_5:
 
 	lsl r8, r8, #15 // Movong the first bit of the output vector to last position 
 
-  	orr r4, r4, r8 // Adding the last bit to the output word
+  	and r4, r4, r8 // Adding the last bit to the output word
 
 	B _return_button_5
 
@@ -192,7 +192,7 @@ _handle_button_7:
 
 	lsl r8, r8, #1 // Movong the first bit of the output vector to last position 
 
-  	orr r4, r4, r8 // Adding the last bit to the output word
+  	and r4, r4, r8 // Adding the last bit to the output word
 	
 	B _return_button_7
 
