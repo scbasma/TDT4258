@@ -122,6 +122,7 @@ _button_init:
 	B _enable_interrupts
 
 _enable_interrupts:
+    //
 	ldr r1, gpio_extipsell_constant
 	
 	ldr r2, gpio_base
@@ -130,11 +131,15 @@ _enable_interrupts:
 
 	mov r1, #0xff
 
+    //setting rise and fall
+    //letting interrupt happen on both rise and fall
 	str r1, [r2, #GPIO_EXTIFALL]
 
 	str r1, [r2, #GPIO_EXTIRISE]
-
+    //interupt generation
 	str r1, [r2, #GPIO_IEN]
+
+    //can't hold 0x802 in one, do mov and then add to make it work
 
 	mov r1, #50
 	
@@ -144,14 +149,17 @@ _enable_interrupts:
 
 	str r1, [r2, #0]
 
+    //loading gpio_pa_base i r2 for senere bruk
 	ldr r2, gpio_pa_base
 	
+    //enable deep sleep
 	mov r3, #0b110
 
 	ldr r1, scr
 
 	str r3, [r1, #0]
 
+    //wait for instructions
 	wfi
 
 
