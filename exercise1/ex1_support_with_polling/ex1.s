@@ -83,6 +83,7 @@
         .thumb_func
 _reset: 
 	      
+	// Enabeling CMU clock 
 	ldr r1, cmu_base_addr
 	
 	ldr r2, [r1, #CMU_HFPERCLKEN0]
@@ -95,6 +96,8 @@ _reset:
 	
 	str r2, [r1, #CMU_HFPERCLKEN0]
 
+	// Setting pins connected to the LEDs as output pins
+
 	mov r1, #2
 
 	ldr r2, gpio_pa_base
@@ -105,9 +108,7 @@ _reset:
 
 	str r1, [r2, #GPIO_MODEH]
 
-	B _button_init
-
-_button_init:
+	// Setting pins connected to the buttons as input pins
 	
 	ldr r4, gpio_pc_model
 
@@ -115,7 +116,9 @@ _button_init:
 
 	str r4, [r5, #GPIO_MODEL]
 
-	mov r4, #0xff
+  // Enabeling external pullup for input pins
+
+	mov r4, #0xff  
 
 	str r4, [r5, #GPIO_DOUT]
 
@@ -147,15 +150,6 @@ gpio_base:
 
 cmu_base_addr:
 	.long CMU_BASE
-
-gpio_extipsell_constant:
-	.long GPIO_EXTIPSELL_CONSTANT
-
-isero: 
-	.long ISER0
-exception_return_to_thread_constant:
-	.long EXCEPTION_RETURN_TO_THREAD_CONSTANT
-
 
 	/////////////////////////////////////////////////////////////////////////////
 	//

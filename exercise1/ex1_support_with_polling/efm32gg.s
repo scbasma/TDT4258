@@ -80,14 +80,10 @@
 
         SCR = 0xe000ed10
 
-	// GPIO_SET_OUTPUT_MODEH
+	// GPIO_SET_OUTPUT_MODEH - Constant for setting all pins to output mode 
 
 	GPIO_SET_OUTPUT_MODEH = 0x55555555
 
-	// GPIO_PC_MODEL
+	// GPIO_PC_MODEL - Constant for setting to input mode
 	GPIO_PC_MODEL = 0x33333333
-
-	GPIO_EXTIPSELL_CONSTANT = 0x22222222
-
-	EXCEPTION_RETURN_TO_THREAD_CONSTANT = 0xFFFFFFF9
 
