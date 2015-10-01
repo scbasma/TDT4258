@@ -32,9 +32,9 @@ int main(void)
      instead of infinite loop for busy-waiting
   */
 
-  
-  *GPIO_PA_DOUT |= (0b11111111 << 8);
-  
+  //for( int i = 0; i < 8; i ++){
+    *GPIO_PA_DOUT |= (0b11111111 << 8);
+  //}
   
   *GPIO_PA_DOUTCLR = (1 << 8);
 
