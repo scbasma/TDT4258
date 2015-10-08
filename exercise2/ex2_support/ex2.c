@@ -33,10 +33,8 @@ int main(void)
   */
 
   
-  *GPIO_PA_DOUT |= (0b11111111 << 8);
-  
-  
-  *GPIO_PA_DOUTCLR = (1 << 8);
+  *GPIO_PA_DOUT |= (0xff << 8);
+  __asm("WFI");
 
   while(1);
 
@@ -52,6 +50,9 @@ void setupNVIC()
      You will need TIMER1, GPIO odd and GPIO even interrupt handling for this
      assignment.
   */
+  *ISER0 = 0x802; 
+  *ISER0 |= (1 << 12);
+  *SCR = 0x2;
 }
 
 /* if other interrupt handlers are needed, use the following names: 

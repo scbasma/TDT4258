@@ -32,11 +32,9 @@ int main(void)
      instead of infinite loop for busy-waiting
   */
 
-  //for( int i = 0; i < 8; i ++){
-    *GPIO_PA_DOUT |= (0b11111111 << 8);
-  //}
   
-  *GPIO_PA_DOUTCLR = (1 << 8);
+  *GPIO_PA_DOUT |= (0xff << 8);
+  __asm("WFI");
 
   while(1);
 
@@ -52,6 +50,18 @@ void setupNVIC()
      You will need TIMER1, GPIO odd and GPIO even interrupt handling for this
      assignment.
   */
+
+  *GPIO_EXTIPSELL |= 0x22222222;
+  *GPIO_EXTIFALL |= 0xff;
+  *GPIO_EXTIRISE |= 0xff;
+  *GPIO_IEN |= 0xff;
+  *CMU_HFPERCLKEN0 |= (0x1 << 6);
+  *TIMER1_TOP |= 0xffff;
+  *TIMER1_IEN |= 0x1;
+  *ISER0 = 0x802; 
+  *ISER0 |= (1 << 12);
+  *TIMER1_CMD |= 0x1;
+  *SCR = 0x2;
 }
 
 /* if other interrupt handlers are needed, use the following names: 

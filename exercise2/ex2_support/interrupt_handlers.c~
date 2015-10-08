@@ -43,9 +43,5 @@ void __attribute__ ((interrupt)) GPIO_ODD_IRQHandler()
 {
     /* TODO handle button pressed event, remember to clear pending interrupt */
   *GPIO_IFC = 0xff;
-  if ((*GPIO_PC_DIN & (1 << 7)) > 0 )
-	amplitude += 100;
-  if ((*GPIO_PC_DIN & (1 << 5)) > 0 )
-	amplitude -= 100;
-  *GPIO_IFC = 0xff;
+  *GPIO_PA_DOUT = *GPIO_PC_DIN << 8;
 }
