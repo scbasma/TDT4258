@@ -5,6 +5,9 @@
 
 int count = 0;
 int amplitude = 2000;
+int freq = 440;
+int sampleFreq = 20000;
+double freqFactor = double(freq)/double(sampleFreq);
 
 
 /* TIMER1 interrupt handler */
@@ -15,14 +18,13 @@ void __attribute__ ((interrupt)) TIMER1_IRQHandler()
     remember to clear the pending interrupt by writing 1 to TIMER1_IFC
   */ 
   *TIMER1_IFC |= 0x1;
-   
 
-  if( count == 1){
-	count = 0;
-	*DAC0_CH0DATA = amplitude;
+	*DAC0_CH0DATA = count*amp*freqFactor;
+	
+  if( count == sampleFreq/freq){
+		count = 0;
   }else{
-	count = 1;
-	*DAC0_CH0DATA = 0;
+		count++;
   }
 }
 
