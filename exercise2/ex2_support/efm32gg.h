@@ -52,11 +52,18 @@
 #define CMU_HFCORECLKEN0 ((volatile uint32_t*)(CMU_BASE2 + 0x040))
 #define CMU_HFPERCLKEN0  ((volatile uint32_t*)(CMU_BASE2 + 0x044))
 #define CMU_CMD          ((volatile uint32_t*)(CMU_BASE2 + 0x024))
+#define CMU_LFACLKEN0	 ((volatile uint32_t*)(CMU_BASE2 + 0x058))
+#define CMU_OSCENCMD	 ((volatile uint32_t*)(CMU_BASE2 + 0x020))
+#define CMU_STATUS	 ((volatile uint32_t*)(CMU_BASE2 + 0x02C))
+#define CMU_SYNCBUSY	 ((volatile uint32_t*)(CMU_BASE2 + 0x050))
+#define CMU_LFCLKSEL	 ((volatile uint32_t*)(CMU_BASE2 + 0x028))
 
 #define CMU2_HFPERCLKEN0_DAC0   (1 << 17)
 #define CMU2_HFPERCLKEN0_PRS    (1 << 15)
 #define CMU2_HFPERCLKEN0_GPIO   (1 << 13)
 #define CMU2_HFPERCLKEN0_TIMER1 (1 << 6)
+#define CMU2_LFACLKEN0_LE_TIMER	(1 << 2)
+
 
 #define CMU_HFCORECLKEN0_DMA (1 << 0)
 
@@ -143,3 +150,13 @@
 #define SYSTICK_CTRL ((volatile uint32_t*)0xe000e010)
 #define SYSTICK_LOAD ((volatile uint32_t*)0xe000e014)
 
+
+// LEtimer
+
+#define LE_TIMER_BASE 0x40082000
+
+#define LE_TIMER_CTRL	((volatile uint32_t*) (LE_TIMER_BASE + 0x0000))
+#define LE_TIMER_CMD	((volatile uint32_t*) (LE_TIMER_BASE + 0x0004))
+#define LE_TIMER_COMP0	((volatile uint32_t*) (LE_TIMER_BASE + 0x0010))
+#define LE_TIMER_IFC	((volatile uint32_t*) (LE_TIMER_BASE + 0x0028))
+#define LE_TIMER_IEN	((volatile uint32_t*) (LE_TIMER_BASE + 0x002c))

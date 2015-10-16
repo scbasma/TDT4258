@@ -5,11 +5,12 @@
 #include "sound.h"
 
 int count = 0;
-int amplitude = 2000;
+int amplitude = 500;
 int freq = 440;
-const int sampleFreq = 20000;
+const int sampleFreq = 32768;
 int scala_counter = 0;
 int note_counter = 0;
+bool upCount = true;
 
 /* TIMER1 interrupt handler */
 void __attribute__ ((interrupt)) TIMER1_IRQHandler() 
@@ -18,28 +19,38 @@ void __attribute__ ((interrupt)) TIMER1_IRQHandler()
     TODO feed new samples to the DAC
     remember to clear the pending interrupt by writing 1 to TIMER1_IFC
   */
+  *TIMER1_IFC |= 0x1;
+  *GPIO_PA_DOUT &= ~(0x1 << 11);
+}
+
+void __attribute__ ((interrupt)) LETIMER0_IRQHandler()
+{
   int note_frequency = scala[scala_counter]; 
   double freqFactor = (double)note_frequency/(double)sampleFreq;
-  *TIMER1_IFC |= 0x1;
+  *LE_TIMER_IFC = (0x1 << 2);
 
   *DAC0_CH0DATA = (int) count*amplitude*freqFactor;
   
 
-  if(note_counter == 5000){
+  if(note_counter == 10000){
 	note_counter = 0;
-	count = 0;
+//	count = 0;
 	scala_counter += 1;
-	if (scala_counter > 31)
+	if (scala_counter > 63)
 		scala_counter = 0;
    }else {
 	note_counter += 1;
    }	
 
-  if( count == sampleFreq/note_frequency){
-		count = 0;
-  }else{
-		count++;
+  if( count >= sampleFreq/note_frequency/2){
+	upCount = false;
+  }else if(count <= 0){
+	upCount = true;
   }
+  
+  count = upCount ? count + 1: count - 1;
+   *GPIO_PA_DOUT &= ~(0x1 << 12);
+  
 }
 
 /* GPIO even pin interrupt handler */
@@ -51,7 +62,8 @@ void __attribute__ ((interrupt)) GPIO_EVEN_IRQHandler()
   if ((*GPIO_PC_DIN & (1 << 5)) > 0 )
 	amplitude -= 100;
   *GPIO_IFC = 0xff;
-  
+  *GPIO_PA_DOUT &= ~(0x1 << 14);
+
 }
 
 /* GPIO odd pin interrupt handler */
@@ -64,4 +76,5 @@ void __attribute__ ((interrupt)) GPIO_ODD_IRQHandler()
   if ((*GPIO_PC_DIN & (1 << 5)) > 0 )
 	amplitude -= 100;
   *GPIO_IFC = 0xff;
+  *GPIO_PA_DOUT &= ~(0x1 << 15);
 }

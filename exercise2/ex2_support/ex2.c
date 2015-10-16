@@ -34,9 +34,8 @@ int main(void)
 
   
   *GPIO_PA_DOUT |= (0xff << 8);
+  *SCR = 6;
   __asm("WFI");
-
-  while(1);
 
   return 0;
 }
@@ -52,7 +51,8 @@ void setupNVIC()
   */
   *ISER0 = 0x802; 
   *ISER0 |= (1 << 12);
-  *SCR = 0x2;
+  *ISER0 |= (1 << 26);
+ 
 }
 
 /* if other interrupt handlers are needed, use the following names: 
