@@ -11,6 +11,7 @@ const int sampleFreq = 32768;
 int scala_counter = 0;
 int note_counter = 0;
 bool upCount = true;
+bool isPlaying = false;
 
 /* TIMER1 interrupt handler */
 void __attribute__ ((interrupt)) TIMER1_IRQHandler() 
@@ -56,20 +57,26 @@ void __attribute__ ((interrupt)) LETIMER0_IRQHandler()
 /* GPIO even pin interrupt handler */
 void __attribute__ ((interrupt)) GPIO_EVEN_IRQHandler() 
 {
-    /* TODO handle button pressed event, remember to clear pending interrupt */
-  if ((*GPIO_PC_DIN & (1 << 7)) > 0 )
-	amplitude += 100;
-  if ((*GPIO_PC_DIN & (1 << 5)) > 0 )
-	amplitude -= 100;
   *GPIO_IFC = 0xff;
-  *GPIO_PA_DOUT &= ~(0x1 << 14);
-
+  if ((*GPIO_PC_DIN & (1 << 0)) == 0 ){
+	if(isPlaying){
+		*LE_TIMER_IEN = 0x0;
+		isPlaying = false;
+		*DAC0_CH0CTRL = 0;
+		*DAC0_CH1CTRL = 0;
+	}
+	else{
+		*LE_TIMER_IEN = 0x1;
+		isPlaying = true;
+		*DAC0_CH0CTRL |= 0x1;
+		*DAC0_CH1CTRL |= 0x1;
+	}
+  }
 }
 
 /* GPIO odd pin interrupt handler */
 void __attribute__ ((interrupt)) GPIO_ODD_IRQHandler() 
 {
-    /* TODO handle button pressed event, remember to clear pending interrupt */
   *GPIO_IFC = 0xff;
   if ((*GPIO_PC_DIN & (1 << 7)) > 0 )
 	amplitude += 100;

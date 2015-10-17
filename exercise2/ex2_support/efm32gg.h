@@ -160,3 +160,4 @@
 #define LE_TIMER_COMP0	((volatile uint32_t*) (LE_TIMER_BASE + 0x0010))
 #define LE_TIMER_IFC	((volatile uint32_t*) (LE_TIMER_BASE + 0x0028))
 #define LE_TIMER_IEN	((volatile uint32_t*) (LE_TIMER_BASE + 0x002c))
+

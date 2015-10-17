@@ -20,19 +20,16 @@ void setupTimer(uint16_t period)
   *CMU_OSCENCMD |= (0x1 << 8);
   while((*CMU_STATUS & (0x1 << 9))){}
   *CMU_HFCORECLKEN0 |= (0x1 << 4);
-//  while((*CMU_SYNCBUSY)){}
   *CMU_LFACLKEN0 |= CMU2_LFACLKEN0_LE_TIMER;
-//  while((*CMU_SYNCBUSY)){}
   *CMU_LFCLKSEL = 0x2;
+  *LE_TIMER_IEN = 0x0;
 //  while((*CMU_SYNCBUSY)){}
-  *LE_TIMER_IEN |= 0x1;
-  while((*CMU_SYNCBUSY)){}
-  *LE_TIMER_COMP0 |= 0x1;
+  *LE_TIMER_COMP0 |= 0x0;
   while((*CMU_SYNCBUSY)){}
   *LE_TIMER_CTRL |= (0x1 << 9);
   while((*CMU_SYNCBUSY)){}
-  *LE_TIMER_CMD |= 0x1;
-  while((*CMU_SYNCBUSY)){}
+  *LE_TIMER_CMD = 0x1;
+//  while((*CMU_SYNCBUSY)){}
 //  *TIMER1_TOP = 350;
 //  *TIMER1_IEN |= 0x1;
 //  *TIMER1_CMD |= 0x1;
