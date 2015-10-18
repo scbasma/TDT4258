@@ -98,16 +98,10 @@ void __attribute__ ((interrupt)) GPIO_EVEN_IRQHandler()
   *GPIO_IFC = 0xff;
   if ((*GPIO_PC_DIN & (1 << 0)) == 0 ){
 	if(isPlaying){
-		*LE_TIMER_IEN = 0x0;
 		isPlaying = false;
-		*DAC0_CH0CTRL = 0;
-		*DAC0_CH1CTRL = 0;
 	}
 	else{
-		*LE_TIMER_IEN = 0x1;
 		isPlaying = true;
-		*DAC0_CH0CTRL |= 0x1;
-		*DAC0_CH1CTRL |= 0x1;
 	}
   }
   for(int i = 1; i < 4; i++){
@@ -142,6 +136,6 @@ void __attribute__ ((interrupt)) GPIO_ODD_IRQHandler()
 	amplitude -= 100;
   if ((*GPIO_PC_DIN & (1 << 5)) == 0 )
 	amplitude += 100;
-  *GPIO_IFC = 0xff;
+
   *GPIO_PA_DOUT &= ~(0x1 << 15);
 }
