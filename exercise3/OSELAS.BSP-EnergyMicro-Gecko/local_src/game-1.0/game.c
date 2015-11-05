@@ -11,8 +11,7 @@ int main(int argc, char *argv[])
 	testFramebuffer();
 	int count;
 	for(count = 0; count < 240; count++){
-		usleep(10);
-		testFramebuffer();
+		usleep(1);
 		createPong(310, count);
 		
 	} 
@@ -30,7 +29,6 @@ int createPong(int x, int y){
 		printf("Error: cannot open framebuffer device");
 		exit(1);
 	}
-	printf("Framebuffer device sucessfully openend");
 	
 
 	
@@ -41,7 +39,6 @@ int createPong(int x, int y){
 		printf("Error: failed to map framebuffer device to memory.");
 		exit(4);
 	}
-	printf("The framebuffer device was mapped to memory successfully");
 
 	int x_pos = x;
 	int y_pos = y;
@@ -50,6 +47,11 @@ int createPong(int x, int y){
 		
 		*(fbp + x_pos + count*320) = 0xFFFF;
 		*(fbp + x_pos-1 + count*320) = 0xFFFF;
+	}
+	for (count = y_pos-20; count < y_pos; count++){
+		
+		*(fbp + x_pos + count*320) = 0x0;
+		*(fbp + x_pos-1 + count*320) = 0x0;
 	}
 	struct fb_copyarea rect; 
 	rect.dy = 0;
@@ -73,7 +75,7 @@ int testFramebuffer(){
 		printf("Error: cannot open framebuffer device");
 		exit(1);
 	}
-	printf("Framebuffer device sucessfully openend");
+	printf("Framebuffer device sucessfully opened \n");
 	
 
 	
@@ -84,7 +86,7 @@ int testFramebuffer(){
 		printf("Error: failed to map framebuffer device to memory.");
 		exit(4);
 	}
-	printf("The framebuffer device was mapped to memory successfully");
+	printf("The framebuffer device was mapped to memory successfully\\nn");
 
 	int middle_vert = 320/2;
 	int count;
