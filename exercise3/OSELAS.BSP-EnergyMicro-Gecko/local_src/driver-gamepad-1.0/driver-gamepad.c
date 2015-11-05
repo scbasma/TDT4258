@@ -5,6 +5,17 @@
 #include <linux/kernel.h>
 #include <linux/module.h>
 #include <linux/init.h>
+#include <linux/ioport.h>
+
+
+#define GPIO_PC_BASE 0x40006048
+#define GPIO_MODEL 0x04
+#define GPIO_DIN 0x1c
+#define GPIO_DOUT 0x0c
+
+#define DRIVER_NAME "gamepad"
+#define MINIOR_NUMBER 0
+#define DEVICE_NUMBER 1
 
 /*
  * template_init - function to insert this module into kernel space
@@ -15,8 +26,36 @@
  * Returns 0 if successfull, otherwise -1
  */
 
+static void* pGPIOPC;
+static dev_t devNr;
+static struct cdev gamepad_cdev;
+static struct file_operations gamepad_fops{
+.owner = THIS_MODULE,
+.read = gamepad_read,
+.write = gamepad_write,
+.open = gamepad_open,
+.release = gamepad_release
+};
+
+
 static int __init template_init(void)
-{
+{	
+
+	if(!alloc_chrdev_region(&devNr, MINIOR_NUMBER, DEVICE_NUMBER, DEVICE_NAME)){
+		printk("UNABLE TO MAKE DRIVER AS KERNEL MODULE");
+		return -1;
+	}
+	if(request_mem_region(GPIO_PC_BASE, 0x24, "GPIO") == NULL){
+		printk("UNABLE TO RESERVE MEMORY REGION");
+		return -1;
+	}
+	pGPIOPC = ioremap_nocache(GPIO_PC_BASE, 0x24);
+	
+	iowrite32(0x33333333, pGPIOPC + GPIO_MODEL);
+	iowrite8(0xff, pGPIOPC + GPIO_DOUT);
+	
+	cdev_init(&gamepad_cdev, &gamepad_fops);
+	
 	printk("Hello World, here is your module speaking\n");
 	return 0;
 }
@@ -28,9 +67,14 @@ static int __init template_init(void)
  * code from a running kernel
  */
 
+
 static void __exit template_cleanup(void)
 {
 	 printk("Short life for a small module...\n");
+}
+
+int gamepad_read(struct file* filp, char* __user){
+	return ioread32(pGPIOPC + GPIO_DOUT);	
 }
 
 module_init(template_init);
