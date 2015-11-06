@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <unistd.h>
 #include <fcntl.h>
 #include <sys/mman.h>
 #include <linux/fb.h>
@@ -21,8 +22,38 @@ struct figure right_pong;
 struct figure left_pong; 
 struct figure ball;
 
-char *fbp; //framebuffer pointer
+short *fbp; //framebuffer pointer
 int fbfd; //framebuffer file pointer
+
+int initialize_figures(){
+    //first draw right_pong
+   int x_pos = SCREEN_WIDTH - 10; //10 pixels from end of screen
+   int y_pos = (SCREEN_HEIGHT / 2) - PONG_HEIGHT / 2; // want to center pong vertically
+
+   int count;
+   for (count = y_pos; count < (y_pos + PONG_HEIGHT); count++){
+        *(fbp + x_pos + count*320) = 0xFFF;
+        *(fbp + x_pos-1 + count*320) = 0xFFF; //two pixels wide
+    }
+    //initialize global right pong struct
+    right_pong.x = x_pos;
+    right_pong.y = y_pos;
+
+    //lets draw left pong
+    x_pos = 10; //10 pixels from start of screen
+    y_pos = (SCREEN_HEIGHT / 2) - PONG_HEIGHT / 2;
+
+    for (count = y_pos; count < (y_pos + PONG_HEIGHT); count++){
+        *(fbp + x_pos + count*320) = 0xFFF;
+        *(fbp + x_pos+1 + count*320) = 0xFFF;
+    }
+    //initialize global left pong struct
+    left_pong.x = x_pos;
+    left_pong.y = y_pos;
+
+    //TODO: draw ball
+    return 0;
+}
 
 int initialize_board(){
     fbfd = 0;
@@ -34,11 +65,7 @@ int initialize_board(){
         return -1;
     }
 
-    fbp = (char *) mmap(0, SCREEN_SIZE, PROT_READ | PROT_WRITE, MAP_SHARED, fbfd, 0);
-
-    if( fbp == MAP_FAILED){
-        return -1;
-    }
+    fbp = (short *) mmap(0, SCREEN_SIZE, PROT_READ | PROT_WRITE, MAP_SHARED, fbfd, 0);
 
     struct fb_copyarea rect;
     rect.dy = 0;
@@ -51,36 +78,6 @@ int initialize_board(){
     return 1;
 }
 
-int initialize_figures(){
-    //first draw right_pong
-   int x_pos = SCREEN_WIDTH - 10; //10 pixels from end of screen
-   int y_pos = (SCREEN_HEIGHT / 2) - PONG_HEIGHT / 2; // want to center pong vertically
-
-   int count;
-   for (count = y_pos; count < (y_pos + PONG_HEIGHT); count++){
-        *(fbp + x_pos + count*320) = 0xFFFF;
-        *(fbp + x_pos-1 + count*320) = 0xFFFF; //two pixels wide
-    }
-    //initialize global right pong struct
-    right_pong.x = x_pos;
-    right_pong.y = y_pos;
-
-    //lets draw left pong
-    x_pos = 10; //10 pixels from start of screen
-    y_pos = (SCREEN_HEIGHT / 2) - PONG_HEIGHT / 2;
-
-    for (count = y_pos; count < (y_pos + PONG_HEIGHT); count++){
-        *(fbp + x_pos + count*320) = 0xFFFF;
-        *(fbp + x_pos+1 + count*320) = 0xFFFF;
-    }
-    //initialize global left pong struct
-    left_pong.x = x_pos;
-    left_pong.y = y_pos;
-
-    //TODO: draw ball
-    return 0;
-}
-
 
 int exit_board(){
     munmap(fbp, SCREEN_SIZE);
@@ -90,7 +87,6 @@ int exit_board(){
 
 int move_right_pong(int by){
 
-    int count;
     int current_x_pos = right_pong.x;
     int current_y_pos = right_pong.y;
     
@@ -102,25 +98,24 @@ int move_right_pong(int by){
     //first make the background black again (after moving pong)
     for(count = current_y_pos; count != future_y_pos;  count += adder){
 
-        *(fbp + x_pos + count*320) = 0x0;
-        *(fbp + x_pos-1 + count*320) = 0x0;
+        *(fbp + current_x_pos + count*320) = 0x0;
+        *(fbp + current_x_pos-1 + count*320) = 0x0;
     }
     
     //draw pong at correct spot
     for(count = future_y_pos; count != (future_y_pos + adder*PONG_HEIGHT); count += adder){
 
-        *(fbp + x_pos + count*320) = 0xFFFF;
-        *(fbp + x_pos-1 + count*320) = 0xFFFF;
+        *(fbp + current_x_pos + count*320) = 0xFFFF;
+        *(fbp + current_x_pos-1 + count*320) = 0xFFFF;
     }
     //update right_pong object
-    right_bong.y = future_y_pos;
+    right_pong.y = future_y_pos;
     return 0;
 
 }
 
 int move_left_pong(int by){
     
-    int count;
     int current_x_pos = left_pong.x;
     int current_y_pos = left_pong.y;
     
@@ -132,18 +127,18 @@ int move_left_pong(int by){
     //first make the background black again (after moving pong)
     for(count = current_y_pos; count != future_y_pos;  count += adder){
 
-        *(fbp + x_pos + count*320) = 0x0;
-        *(fbp + x_pos+1 + count*320) = 0x0;
+        *(fbp + current_x_pos + count*320) = 0x0;
+        *(fbp + current_x_pos+1 + count*320) = 0x0;
     }
     
     //draw pong at correct spot
     for(count = future_y_pos; count != (future_y_pos + adder*PONG_HEIGHT); count += adder){
 
-        *(fbp + x_pos + count*320) = 0xFFFF;
-        *(fbp + x_pos+1 + count*320) = 0xFFFF;
+        *(fbp + current_x_pos + count*320) = 0xFFFF;
+        *(fbp + current_x_pos+1 + count*320) = 0xFFFF;
     }
     //update right_pong object
-    right_bong.y = future_y_pos;
+    right_pong.y = future_y_pos;
 
     return 0;
 
