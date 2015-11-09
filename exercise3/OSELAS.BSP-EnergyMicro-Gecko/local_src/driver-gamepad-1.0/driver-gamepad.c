@@ -26,6 +26,8 @@
  * Returns 0 if successfull, otherwise -1
  */
 
+
+
 static void* pGPIOPC;
 static dev_t devNr;
 static struct cdev gamepad_cdev;
@@ -55,6 +57,9 @@ static int __init template_init(void)
 	iowrite8(0xff, pGPIOPC + GPIO_DOUT);
 	
 	cdev_init(&gamepad_cdev, &gamepad_fops);
+	cdev_add(&gamepad_cdev, devNr, DEVICE_NUMBER);
+	cl = class_create(THIS_MODULE, DEvICE_NAME);
+	device_create(cl, NULL, devNr, NULL, DEVICE_NAME);
 	
 	printk("Hello World, here is your module speaking\n");
 	return 0;
@@ -73,10 +78,24 @@ static void __exit template_cleanup(void)
 	 printk("Short life for a small module...\n");
 }
 
-int gamepad_read(struct file* filp, char* __user){
-	return ioread32(pGPIOPC + GPIO_DOUT);	
+static ssize_t gamepad_read(struct file *filp, char __user *buff, size_t count, loff_t *offp){
+	uint32 temp = ioread(pGPIOPC + GPIO_DOUT);
+	copy_to_user(buff, &temp ,1);
+	return 1;
 }
 
+static ssize_t gamepad_write(struct file *filp, const char __user *buff, size_t count, loff_t *offp){
+	return 1;
+}
+
+static int gamepad_open(struct inode *inode, struct file *filp){
+	return 1;
+}
+
+
+static int gamepad_release(struct inode *inode, struct file *filp){
+	return 1;
+}
 module_init(template_init);
 module_exit(template_cleanup);
 
