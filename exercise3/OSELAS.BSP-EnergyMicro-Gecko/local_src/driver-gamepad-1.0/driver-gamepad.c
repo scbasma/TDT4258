@@ -21,6 +21,11 @@
 #define GPIO_DIN 0x1c
 #define GPIO_DOUT 0x0c
 
+#define GPIO_IRQ_BASE 0x40006100
+#define GPIO_EXTIFALL 0xc
+#define GPIO_IEN 0x10
+#define GPIO_IFC 0X1c
+
 #define DEVICE_NAME "gamepad"
 #define MINIOR_NUMBER 0
 #define DEVICE_NUMBER 1
@@ -40,7 +45,7 @@ static ssize_t gamepad_write(struct file *filp, const char __user *buff, size_t 
 static int gamepad_open(struct inode *inode, struct file *filp);
 static int gamepad_release(struct inode *inode, struct file *filp);
 
-static void* pGPIOPC;
+static void* pGPIOPC, pGPIOIRQ;
 static dev_t devNr;
 static struct cdev gamepad_cdev;
 static struct file_operations gamepad_fops = {
@@ -51,6 +56,8 @@ static struct file_operations gamepad_fops = {
 .release = gamepad_release
 };
 struct class* cl;
+static irqreturn_t gpio_interrupt_handler(int, void* ,struct ptregs*);
+
 
 
 static int __init template_init(void)
@@ -64,8 +71,17 @@ static int __init template_init(void)
 		printk("UNABLE TO RESERVE MEMORY REGION");
 		return -1;
 	}
-	pGPIOPC = ioremap_nocache(GPIO_PC_BASE, 0x24);
 	
+	if(request_mem_region(GPIO_IRQ_BASE, 0x20, "GPIO_IRQ") == NULL){
+		printk("UNABLE TO RESERVE MEMORY REGION");
+		return -1;
+	}
+	pGPIOPC = ioremap_nocache(GPIO_PC_BASE, 0x24);
+	pGPIOIRQ = ioremap_nocache(GPIO_PC_BASE, 0x24);
+
+	request_irq(17, (irq_handler_t)gpio_interrupt_handler, 0, DEVICE_NAME, &gamepad_cdev);
+	request_irq(18, (irq_handler_t)gpio_interrupt_handler, 0, DEVICE_NAME, &gamepad_cdev);
+
 	iowrite32(0x33333333, pGPIOPC + GPIO_MODEL);
 	iowrite8(0xff, pGPIOPC + GPIO_DOUT);
 	
@@ -73,9 +89,18 @@ static int __init template_init(void)
 	cdev_add(&gamepad_cdev, devNr, DEVICE_NUMBER);
 	cl = class_create(THIS_MODULE, DEVICE_NAME);
 	device_create(cl, NULL, devNr, NULL, DEVICE_NAME);
+
+	iowrite32(0xff, pGPIOIRQ + GPIO_EXTIFALL);
+	iowrite32(0x00ff, pGPIOIRQ + GPIO_IEN);
+	
 	
 	printk("Hello World, here is your module speaking\n");
 	return 0;
+}
+
+
+irqreturn_t gpio_interrupt_handler(int irq, void* dev_id, struct pt_regs* regs){
+	iowrite32(0xff; pGPIOIRQ + GPIO_IFC);
 }
 
 /*
