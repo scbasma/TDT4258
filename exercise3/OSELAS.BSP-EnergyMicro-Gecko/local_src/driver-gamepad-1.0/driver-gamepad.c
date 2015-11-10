@@ -6,6 +6,14 @@
 #include <linux/module.h>
 #include <linux/init.h>
 #include <linux/ioport.h>
+#include <linux/cdev.h>
+#include <linux/fs.h>
+#include <linux/types.h>
+#include <linux/io.h>
+#include <linux/device.h>
+#include <asm/io.h>
+#include <linux/sched.h>
+#include <asm/uaccess.h>
 
 
 #define GPIO_PC_BASE 0x40006048
@@ -13,7 +21,7 @@
 #define GPIO_DIN 0x1c
 #define GPIO_DOUT 0x0c
 
-#define DRIVER_NAME "gamepad"
+#define DEVICE_NAME "gamepad"
 #define MINIOR_NUMBER 0
 #define DEVICE_NUMBER 1
 
@@ -27,17 +35,22 @@
  */
 
 
+static ssize_t gamepad_read(struct file *filp, char __user *buff, size_t count, loff_t *offp);
+static ssize_t gamepad_write(struct file *filp, const char __user *buff, size_t count, loff_t *offp);
+static int gamepad_open(struct inode *inode, struct file *filp);
+static int gamepad_release(struct inode *inode, struct file *filp);
 
 static void* pGPIOPC;
 static dev_t devNr;
 static struct cdev gamepad_cdev;
-static struct file_operations gamepad_fops{
+static struct file_operations gamepad_fops = {
 .owner = THIS_MODULE,
 .read = gamepad_read,
 .write = gamepad_write,
 .open = gamepad_open,
 .release = gamepad_release
 };
+struct class* cl;
 
 
 static int __init template_init(void)
@@ -58,7 +71,7 @@ static int __init template_init(void)
 	
 	cdev_init(&gamepad_cdev, &gamepad_fops);
 	cdev_add(&gamepad_cdev, devNr, DEVICE_NUMBER);
-	cl = class_create(THIS_MODULE, DEvICE_NAME);
+	cl = class_create(THIS_MODULE, DEVICE_NAME);
 	device_create(cl, NULL, devNr, NULL, DEVICE_NAME);
 	
 	printk("Hello World, here is your module speaking\n");
@@ -79,7 +92,7 @@ static void __exit template_cleanup(void)
 }
 
 static ssize_t gamepad_read(struct file *filp, char __user *buff, size_t count, loff_t *offp){
-	uint32 temp = ioread(pGPIOPC + GPIO_DOUT);
+	int32_t temp = ioread32(pGPIOPC + GPIO_DOUT);
 	copy_to_user(buff, &temp ,1);
 	return 1;
 }
