@@ -10,6 +10,7 @@
 #define SCREEN_HEIGHT 240
 #define SCREEN_SIZE SCREEN_WIDTH*SCREEN_HEIGHT
 #define PONG_HEIGHT 20 //in pixels
+#define BALL_RADIUS
 
 struct figure {
     int x;
@@ -52,6 +53,15 @@ int initialize_figures(){
     left_pong.y = y_pos;
 
     //TODO: draw ball
+    //ball is of for simplicity sake just a rectangle
+
+    //lets place it in the middle
+    x_pos = SCREEN_WIDTH/2;
+    y_pos = SCREEN_HEIGHT/240;
+    
+    //middle pixel
+    *(fbp + x_pos + count*320) = 0xFFF;
+
     return 0;
 }
 
@@ -137,8 +147,8 @@ int move_left_pong(int by){
         *(fbp + current_x_pos + count*320) = 0xFFFF;
         *(fbp + current_x_pos+1 + count*320) = 0xFFFF;
     }
-    //update right_pong object
-    right_pong.y = future_y_pos;
+    //update left_pong object
+    left_pong.y = future_y_pos;
 
     return 0;
 
@@ -147,6 +157,5 @@ int move_left_pong(int by){
 int move_ball(int by){
     return 0;
 }
-
 
 

@@ -11,10 +11,10 @@ CPPFLAGS +=
 LDFLAGS +=
 CC = gcc
 
-game: game.o graphics.o;$(CC) -o game game.o graphics.o -I.
+game: game.o pong_graphics.o pong_logic.o;$(CC) -o game game.o pong_graphics.o pong_logic.o -I.
 
 clean:
-	-rm -f game
+	-rm -f game game.o pong_graphics.o pong_logic.o
 
 install:
 
