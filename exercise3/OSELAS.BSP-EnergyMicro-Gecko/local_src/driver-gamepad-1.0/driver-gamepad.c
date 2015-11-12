@@ -14,6 +14,7 @@
 #include <asm/io.h>
 #include <linux/sched.h>
 #include <asm/uaccess.h>
+#include <linux/interrupt.h>
 
 
 #define GPIO_PC_BASE 0x40006048
@@ -45,7 +46,8 @@ static ssize_t gamepad_write(struct file *filp, const char __user *buff, size_t 
 static int gamepad_open(struct inode *inode, struct file *filp);
 static int gamepad_release(struct inode *inode, struct file *filp);
 
-static void* pGPIOPC, pGPIOIRQ;
+static void* pGPIOPC;
+static void* pGPIOIRQ;
 static dev_t devNr;
 static struct cdev gamepad_cdev;
 static struct file_operations gamepad_fops = {
@@ -56,14 +58,14 @@ static struct file_operations gamepad_fops = {
 .release = gamepad_release
 };
 struct class* cl;
-static irqreturn_t gpio_interrupt_handler(int, void* ,struct ptregs*);
+static irqreturn_t gpio_interrupt_handler(int, void* ,struct pt_regs*);
 
 
 
 static int __init template_init(void)
 {	
 
-	if(!alloc_chrdev_region(&devNr, MINIOR_NUMBER, DEVICE_NUMBER, DEVICE_NAME)){
+	if(alloc_chrdev_region(&devNr, MINIOR_NUMBER, DEVICE_NUMBER, DEVICE_NAME) < 0){
 		printk("UNABLE TO MAKE DRIVER AS KERNEL MODULE");
 		return -1;
 	}
@@ -77,13 +79,13 @@ static int __init template_init(void)
 		return -1;
 	}
 	pGPIOPC = ioremap_nocache(GPIO_PC_BASE, 0x24);
-	pGPIOIRQ = ioremap_nocache(GPIO_PC_BASE, 0x24);
+	pGPIOIRQ = ioremap_nocache(GPIO_IRQ_BASE, 0x24);
 
 	request_irq(17, (irq_handler_t)gpio_interrupt_handler, 0, DEVICE_NAME, &gamepad_cdev);
 	request_irq(18, (irq_handler_t)gpio_interrupt_handler, 0, DEVICE_NAME, &gamepad_cdev);
 
 	iowrite32(0x33333333, pGPIOPC + GPIO_MODEL);
-	iowrite8(0xff, pGPIOPC + GPIO_DOUT);
+	iowrite32(0xff, pGPIOPC + GPIO_DOUT);
 	
 	cdev_init(&gamepad_cdev, &gamepad_fops);
 	cdev_add(&gamepad_cdev, devNr, DEVICE_NUMBER);
@@ -91,7 +93,7 @@ static int __init template_init(void)
 	device_create(cl, NULL, devNr, NULL, DEVICE_NAME);
 
 	iowrite32(0xff, pGPIOIRQ + GPIO_EXTIFALL);
-	iowrite32(0x00ff, pGPIOIRQ + GPIO_IEN);
+//	iowrite32(0x00ff, pGPIOIRQ + GPIO_IEN);
 	
 	
 	printk("Hello World, here is your module speaking\n");
@@ -100,7 +102,7 @@ static int __init template_init(void)
 
 
 irqreturn_t gpio_interrupt_handler(int irq, void* dev_id, struct pt_regs* regs){
-	iowrite32(0xff; pGPIOIRQ + GPIO_IFC);
+	iowrite32(0xff, pGPIOIRQ + GPIO_IFC);
 }
 
 /*
@@ -117,7 +119,7 @@ static void __exit template_cleanup(void)
 }
 
 static ssize_t gamepad_read(struct file *filp, char __user *buff, size_t count, loff_t *offp){
-	int32_t temp = ioread32(pGPIOPC + GPIO_DOUT);
+	int32_t temp = ioread32(pGPIOPC + GPIO_DIN);
 	copy_to_user(buff, &temp ,1);
 	return 1;
 }
@@ -127,12 +129,12 @@ static ssize_t gamepad_write(struct file *filp, const char __user *buff, size_t 
 }
 
 static int gamepad_open(struct inode *inode, struct file *filp){
-	return 1;
+	return 0;
 }
 
 
 static int gamepad_release(struct inode *inode, struct file *filp){
-	return 1;
+	return 0;
 }
 module_init(template_init);
 module_exit(template_cleanup);

@@ -4,20 +4,20 @@
 #include <linux/fb.h>
 #include <sys/mman.h>
 #include <unistd.h>
-#include "graphics.h"
 
 int main(int argc, char *argv[])
 {
 	printf("Hello World!\n");
-//	testFramebuffer();
-//	int count;
-//	for(count = 0; count < 240; count++){
-//		usleep(10);
-//		testFramebuffer();
-//		createPong(310, count);
-//		
-//	} 
-//	exit(EXIT_SUCCESS);
+	int fp = open("/dev/gamepad", O_RDWR);
+	int byte;
+	while(1){
+	
+	ssize_t size = read(fp, &byte, 4);
+	printf("Read byte %d\n", byte);
+	}	
+	exit(EXIT_SUCCESS);
+
+	return 0;
 }
 
 //int createPong(int x, int y){
