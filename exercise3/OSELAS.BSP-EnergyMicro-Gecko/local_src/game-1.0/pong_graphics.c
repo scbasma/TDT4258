@@ -12,17 +12,6 @@
 #define PONG_HEIGHT 20 //in pixels
 #define BALL_RADIUS
 
-struct figure {
-    int x;
-    int y;
-    int height;
-    int width;
-};
-
-struct figure right_pong;
-struct figure left_pong; 
-struct figure ball;
-
 short *fbp; //framebuffer pointer
 int fbfd; //framebuffer file pointer
 

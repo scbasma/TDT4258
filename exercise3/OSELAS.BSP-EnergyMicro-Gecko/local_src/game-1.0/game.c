@@ -4,6 +4,7 @@
 #include <linux/fb.h>
 #include <sys/mman.h>
 #include <unistd.h>
+#include "pong_graphics.h"
 
 int main(int argc, char *argv[])
 {
