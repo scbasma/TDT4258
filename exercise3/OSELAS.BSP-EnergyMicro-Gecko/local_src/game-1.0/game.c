@@ -9,13 +9,14 @@
 int main(int argc, char *argv[])
 {
 	printf("Hello World!\n");
-	int fp = open("/dev/gamepad", O_RDWR);
-	int byte;
-	while(1){
-	
-	ssize_t size = read(fp, &byte, 4);
-	printf("Read byte %d\n", byte);
-	}	
+//	int fp = open("/dev/gamepad", O_RDWR);
+//	int byte;
+//	while(1){
+//	
+//	ssize_t size = read(fp, &byte, 4);
+//	printf("Read byte %d\n", byte);
+//	}	
+    initialize_board();
 	exit(EXIT_SUCCESS);
 
 	return 0;
