@@ -5,6 +5,8 @@
 #include <sys/mman.h>
 #include <unistd.h>
 #include "pong_graphics.h"
+FILE* device;
+
 
 int main(int argc, char *argv[])
 {
@@ -24,6 +26,32 @@ int main(int argc, char *argv[])
 	exit(EXIT_SUCCESS);
 
 	return 0;
+}
+
+int gamepad_init(){
+	device = fopen("/dev/gamepad","rb");
+	if(!device){
+		printf("Error: Unable to open device\n");
+		return -1;
+	}
+	if(signal(SIGIO, &gamepad_interrupt_handler) == SIG_ERR){
+		printf("Error: Unable to register signal handler for gamepad interrupts\n");
+		return -1;
+	}
+	if(fcntl(fileno(device), F_SETOWN, getpid()) == -1){
+		printd("Error: Unable to set pid as owner\n");
+		return -1;
+	}
+	long oflags = fcntl(fileno(device), F_GETFL);
+	if(fcntl(fileno(device), F_SETFL, oflags | FASYNC) == -1){
+		printf("Error: unable to set async flag\n");
+		return -1;
+	}
+	return 0;
+}
+
+void gamepad_interrupt_handler(int signo){
+	printf("Received interrupt\n");
 }
 
 //int createPong(int x, int y){

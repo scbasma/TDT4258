@@ -15,6 +15,7 @@
 #include <linux/sched.h>
 #include <asm/uaccess.h>
 #include <linux/interrupt.h>
+#include <linux/fs.h>
 
 
 #define GPIO_PC_BASE 0x40006048
@@ -46,6 +47,7 @@ static ssize_t gamepad_read(struct file *filp, char __user *buff, size_t count, 
 static ssize_t gamepad_write(struct file *filp, const char __user *buff, size_t count, loff_t *offp);
 static int gamepad_open(struct inode *inode, struct file *filp);
 static int gamepad_release(struct inode *inode, struct file *filp);
+static int gamepad_fasync(int fd, struct file* filp, int mode),
 
 static void* pGPIOPC;
 static void* pGPIOIRQ;
@@ -56,10 +58,12 @@ static struct file_operations gamepad_fops = {
 .read = gamepad_read,
 .write = gamepad_write,
 .open = gamepad_open,
-.release = gamepad_release
+.release = gamepad_release,
+.fasync = gamepad_fasync
 };
 struct class* cl;
 static irqreturn_t gpio_interrupt_handler(int, void* ,struct pt_regs*);
+struct fasync_struct* async_queue;
 
 
 
@@ -101,7 +105,7 @@ static int __init template_init(void)
 
 	// Configuring interrupt registers
 	iowrite32(0xff, pGPIOIRQ + GPIO_EXTIFALL);
-	iowrite32(0x2222222, pGPIOIRQ + GPIO_EXTIPSEL);
+	iowrite32(0x22222222, pGPIOIRQ + GPIO_EXTIPSEL);
 	iowrite32(0x00ff, pGPIOIRQ + GPIO_IEN);
 	iowrite32(0xff, pGPIOIRQ + GPIO_IFC);
 	
@@ -113,8 +117,15 @@ static int __init template_init(void)
 
 irqreturn_t gpio_interrupt_handler(int irq, void* dev_id, struct pt_regs* regs){
 	iowrite32(0xff, pGPIOIRQ + GPIO_IFC);
-	printk("GPIO interrupt received");
+	if(async_queue){
+		kill_fasync(&async_queue, SIGIO, POLL_IN);
+	}
 	return IRQ_HANDLED;
+}
+
+
+static int gamepad_fasync(int fd, struct file* filp, int mode){
+	return fasync_helper(fd, filp, mode, &async_queue);
 }
 
 /*
