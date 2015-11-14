@@ -14,7 +14,12 @@
 
 short *fbp; //framebuffer pointer
 int fbfd; //framebuffer file pointer
-
+struct figure {
+    int x;
+    int y;
+};
+struct figure right_pong;
+struct figure left_pong;
 int initialize_figures(){
     //first draw right_pong
    int x_pos = SCREEN_WIDTH - 10; //10 pixels from end of screen

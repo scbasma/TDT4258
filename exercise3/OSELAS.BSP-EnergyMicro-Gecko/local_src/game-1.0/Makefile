@@ -9,8 +9,10 @@
 CFLAGS += -O2 -g -Wall #-Wsign-compare -Wfloat-equal -Wformat-security #-Werror
 CPPFLAGS +=
 LDFLAGS +=
+CC = gcc
 
-all: game
+all: game.o pong_graphics.o
+	$(CC) -o game game.o pong_graphics.o -I.
 
 clean:
 	-rm -f game
