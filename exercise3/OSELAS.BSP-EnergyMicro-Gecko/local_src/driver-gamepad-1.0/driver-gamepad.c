@@ -113,6 +113,7 @@ static int __init template_init(void)
 irqreturn_t gpio_interrupt_handler(int irq, void* dev_id, struct pt_regs* regs){
 	iowrite32(0xff, pGPIOIRQ + GPIO_IFC);
 	printk("GPIO interrupt received");
+	return IRQ_HANDLED;
 }
 
 /*
