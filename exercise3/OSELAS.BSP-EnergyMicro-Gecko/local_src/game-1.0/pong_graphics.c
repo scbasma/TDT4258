@@ -77,7 +77,12 @@ int initialize_board(){
     rect.width = SCREEN_WIDTH;
     rect.height = SCREEN_HEIGHT;
     ioctl(fbfd, 0x4680, &rect); 
+    
+    int count;
+    for(count = 0; count < 240*320; count++){
 
+	*(fbp + count) = 0x0;
+    }
     initialize_figures();
     return 1;
 }

@@ -16,7 +16,11 @@ int main(int argc, char *argv[])
 //	ssize_t size = read(fp, &byte, 4);
 //	printf("Read byte %d\n", byte);
 //	}	
-    initialize_board();
+	if(    initialize_board() != -1){
+		printf("Initialize board not -1!\n");
+	}else {
+		printf("initialize board equals -1\n");
+	}
 	exit(EXIT_SUCCESS);
 
 	return 0;

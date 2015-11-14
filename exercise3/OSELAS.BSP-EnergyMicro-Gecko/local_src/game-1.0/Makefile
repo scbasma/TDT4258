@@ -15,7 +15,7 @@ all: game.o pong_graphics.o
 	$(CC) -o game game.o pong_graphics.o -I.
 
 clean:
-	-rm -f game
+	-rm -f game game.o pong_graphics.o
 
 install:
 
