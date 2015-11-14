@@ -5,8 +5,10 @@
 #include <sys/mman.h>
 #include <unistd.h>
 #include "pong_graphics.h"
-FILE* device;
-
+#include <signal.h>
+//FILE* device;
+int device;
+void gamepad_interrupt_handler(int);
 
 int main(int argc, char *argv[])
 {
@@ -18,19 +20,20 @@ int main(int argc, char *argv[])
 //	ssize_t size = read(fp, &byte, 4);
 //	printf("Read byte %d\n", byte);
 //	}	
-	if(    initialize_board() != -1){
-		printf("Initialize board not -1!\n");
-	}else {
-		printf("initialize board equals -1\n");
-	}
+//	if(    initialize_board() != -1){
+//		printf("Initialize board not -1!\n");
+//	}else {
+//		printf("initialize board equals -1\n");
+//	}
+	gamepad_init();
 	exit(EXIT_SUCCESS);
-
+	
 	return 0;
 }
 
 int gamepad_init(){
-	device = fopen("/dev/gamepad","rb");
-	if(!device){
+	device = open("/dev/gamepad",O_RDONLY);
+	if(device == -1){
 		printf("Error: Unable to open device\n");
 		return -1;
 	}
@@ -38,12 +41,13 @@ int gamepad_init(){
 		printf("Error: Unable to register signal handler for gamepad interrupts\n");
 		return -1;
 	}
-	if(fcntl(fileno(device), F_SETOWN, getpid()) == -1){
-		printd("Error: Unable to set pid as owner\n");
+	if(fcntl(device, F_SETOWN, getpid()) == -1){
+		printf("Error: Unable to set pid as owner\n");
 		return -1;
 	}
-	long oflags = fcntl(fileno(device), F_GETFL);
-	if(fcntl(fileno(device), F_SETFL, oflags | FASYNC) == -1){
+	long oflags = fcntl(device, F_GETFL);
+	printf("oflags: %x\n", oflags);
+	if(fcntl(device, F_SETFL, oflags | FASYNC) == -1){
 		printf("Error: unable to set async flag\n");
 		return -1;
 	}

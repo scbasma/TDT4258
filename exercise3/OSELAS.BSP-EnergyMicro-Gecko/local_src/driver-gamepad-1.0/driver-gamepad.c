@@ -47,7 +47,7 @@ static ssize_t gamepad_read(struct file *filp, char __user *buff, size_t count, 
 static ssize_t gamepad_write(struct file *filp, const char __user *buff, size_t count, loff_t *offp);
 static int gamepad_open(struct inode *inode, struct file *filp);
 static int gamepad_release(struct inode *inode, struct file *filp);
-static int gamepad_fasync(int fd, struct file* filp, int mode),
+static int gamepad_fasync(int fd, struct file* filp, int mode);
 
 static void* pGPIOPC;
 static void* pGPIOIRQ;
@@ -59,7 +59,7 @@ static struct file_operations gamepad_fops = {
 .write = gamepad_write,
 .open = gamepad_open,
 .release = gamepad_release,
-.fasync = gamepad_fasync
+.fasync = gamepad_fasync,
 };
 struct class* cl;
 static irqreturn_t gpio_interrupt_handler(int, void* ,struct pt_regs*);
@@ -99,6 +99,7 @@ static int __init template_init(void)
 	
 	// Initiating driver as char device
 	cdev_init(&gamepad_cdev, &gamepad_fops);
+	gamepad_cdev.owner = THIS_MODULE;
 	cdev_add(&gamepad_cdev, devNr, DEVICE_NUMBER);
 	cl = class_create(THIS_MODULE, DEVICE_NAME);
 	device_create(cl, NULL, devNr, NULL, DEVICE_NAME);
@@ -117,7 +118,10 @@ static int __init template_init(void)
 
 irqreturn_t gpio_interrupt_handler(int irq, void* dev_id, struct pt_regs* regs){
 	iowrite32(0xff, pGPIOIRQ + GPIO_IFC);
+	printk("inside gpio interrupt handler\n");
+	printk("async_queue is : %x\n", async_queue);
 	if(async_queue){
+		printk("Inside if async_queue\n");
 		kill_fasync(&async_queue, SIGIO, POLL_IN);
 	}
 	return IRQ_HANDLED;
@@ -125,6 +129,12 @@ irqreturn_t gpio_interrupt_handler(int irq, void* dev_id, struct pt_regs* regs){
 
 
 static int gamepad_fasync(int fd, struct file* filp, int mode){
+	//async_queue = filp->private_data->async_queue;
+	printk("Inside gamepad fasync\n");
+	printk("async_queue is : %x\n", async_queue);
+	if (async_queue != 0 ){
+		return 0;
+	}
 	return fasync_helper(fd, filp, mode, &async_queue);
 }
 
