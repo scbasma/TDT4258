@@ -26,6 +26,8 @@ int main(int argc, char *argv[])
 //		printf("initialize board equals -1\n");
 //	}
 	gamepad_init();
+	while(true){
+	}
 	exit(EXIT_SUCCESS);
 	
 	return 0;
@@ -46,7 +48,6 @@ int gamepad_init(){
 		return -1;
 	}
 	long oflags = fcntl(device, F_GETFL);
-	printf("oflags: %x\n", oflags);
 	if(fcntl(device, F_SETFL, oflags | FASYNC) == -1){
 		printf("Error: unable to set async flag\n");
 		return -1;

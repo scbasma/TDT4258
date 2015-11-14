@@ -131,10 +131,6 @@ irqreturn_t gpio_interrupt_handler(int irq, void* dev_id, struct pt_regs* regs){
 static int gamepad_fasync(int fd, struct file* filp, int mode){
 	//async_queue = filp->private_data->async_queue;
 	printk("Inside gamepad fasync\n");
-	printk("async_queue is : %x\n", async_queue);
-	if (async_queue != 0 ){
-		return 0;
-	}
 	return fasync_helper(fd, filp, mode, &async_queue);
 }
 
