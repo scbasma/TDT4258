@@ -103,6 +103,7 @@ static int __init template_init(void)
 	iowrite32(0xff, pGPIOIRQ + GPIO_EXTIFALL);
 	iowrite32(0x00ff, pGPIOIRQ + GPIO_IEN);
 	iowrite32(0x2222222, pGPIOIRQ + GPIO_EXTIPSEL);
+	iowrite32(0xff, pGPIOIRQ + GPIO_EXTIPSEL);
 	
 	
 	printk("Hello World, here is your module speaking\n");
