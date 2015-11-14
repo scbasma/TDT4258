@@ -25,6 +25,7 @@
 
 #define GPIO_IRQ_BASE 0x40006100
 #define GPIO_EXTIPSEL 0x0
+#define GPIO_EXTIRISE 0x8
 #define GPIO_EXTIFALL 0xc
 #define GPIO_IEN 0x10
 #define GPIO_IFC 0X1c
@@ -64,6 +65,8 @@ static struct file_operations gamepad_fops = {
 struct class* cl;
 static irqreturn_t gpio_interrupt_handler(int, void* ,struct pt_regs*);
 struct fasync_struct* async_queue;
+
+uint32_t button_array;
 
 
 
@@ -106,6 +109,7 @@ static int __init template_init(void)
 
 	// Configuring interrupt registers
 	iowrite32(0xff, pGPIOIRQ + GPIO_EXTIFALL);
+	iowrite32(0xff, pGPIOIRQ + GPIO_EXTIRISE);
 	iowrite32(0x22222222, pGPIOIRQ + GPIO_EXTIPSEL);
 	iowrite32(0x00ff, pGPIOIRQ + GPIO_IEN);
 	iowrite32(0xff, pGPIOIRQ + GPIO_IFC);
@@ -119,6 +123,7 @@ static int __init template_init(void)
 irqreturn_t gpio_interrupt_handler(int irq, void* dev_id, struct pt_regs* regs){
 	iowrite32(0xff, pGPIOIRQ + GPIO_IFC);
 	printk("inside gpio interrupt handler\n");
+	button_array = ioread32(pGPIOPC + GPIO_DIN);
 	printk("async_queue is : %x\n", async_queue);
 	if(async_queue){
 		printk("Inside if async_queue\n");
@@ -148,8 +153,7 @@ static void __exit template_cleanup(void)
 }
 
 static ssize_t gamepad_read(struct file *filp, char __user *buff, size_t count, loff_t *offp){
-	int32_t temp = ioread32(pGPIOPC + GPIO_DIN);
-	copy_to_user(buff, &temp ,1);
+	copy_to_user(buff, button_array, 1);
 	return 1;
 }
 

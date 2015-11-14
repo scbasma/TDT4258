@@ -8,6 +8,7 @@
 #include <signal.h>
 //FILE* device;
 int device;
+bool buttons_pressed[8];
 void gamepad_interrupt_handler(int);
 
 int main(int argc, char *argv[])
@@ -57,8 +58,20 @@ int gamepad_init(){
 
 void gamepad_interrupt_handler(int signo){
 	printf("Received interrupt\n");
+	for(int i = 0; i <8; i++){
+		button_array[i] = isPressed(i);
+	}
 }
 
+
+bool isPressed(int key){
+	char buttons;
+	read(device, buttons, 1);
+	if( buttond >> key)
+		return true;
+	else
+		return false;
+}
 //int createPong(int x, int y){
 //
 //	int fbfd = 0;
