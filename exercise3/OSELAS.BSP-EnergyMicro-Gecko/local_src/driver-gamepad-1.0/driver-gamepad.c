@@ -23,6 +23,7 @@
 #define GPIO_DOUT 0x0c
 
 #define GPIO_IRQ_BASE 0x40006100
+#define GPIO_EXTIPSEL 0x0
 #define GPIO_EXTIFALL 0xc
 #define GPIO_IEN 0x10
 #define GPIO_IFC 0X1c
@@ -64,36 +65,44 @@ static irqreturn_t gpio_interrupt_handler(int, void* ,struct pt_regs*);
 
 static int __init template_init(void)
 {	
-
+	
+	// Allocating region for driver
 	if(alloc_chrdev_region(&devNr, MINIOR_NUMBER, DEVICE_NUMBER, DEVICE_NAME) < 0){
 		printk("UNABLE TO MAKE DRIVER AS KERNEL MODULE");
 		return -1;
 	}
+	// Requesting memory area for GPIO registers
 	if(request_mem_region(GPIO_PC_BASE, 0x24, "GPIO") == NULL){
 		printk("UNABLE TO RESERVE MEMORY REGION");
 		return -1;
 	}
-	
+	// Requesting memory area for GPIO interrupt registers
 	if(request_mem_region(GPIO_IRQ_BASE, 0x20, "GPIO_IRQ") == NULL){
 		printk("UNABLE TO RESERVE MEMORY REGION");
 		return -1;
 	}
+	// Making virtual memory adresses
 	pGPIOPC = ioremap_nocache(GPIO_PC_BASE, 0x24);
 	pGPIOIRQ = ioremap_nocache(GPIO_IRQ_BASE, 0x24);
-
+	
+	// requesting interrupt handlers for gpio interrupts
 	request_irq(17, (irq_handler_t)gpio_interrupt_handler, 0, DEVICE_NAME, &gamepad_cdev);
 	request_irq(18, (irq_handler_t)gpio_interrupt_handler, 0, DEVICE_NAME, &gamepad_cdev);
-
+	
+	// Configuring GPIO_PC as input
 	iowrite32(0x33333333, pGPIOPC + GPIO_MODEL);
 	iowrite32(0xff, pGPIOPC + GPIO_DOUT);
 	
+	// Initiating driver as char device
 	cdev_init(&gamepad_cdev, &gamepad_fops);
 	cdev_add(&gamepad_cdev, devNr, DEVICE_NUMBER);
 	cl = class_create(THIS_MODULE, DEVICE_NAME);
 	device_create(cl, NULL, devNr, NULL, DEVICE_NAME);
 
+	// Configuring interrupt registers
 	iowrite32(0xff, pGPIOIRQ + GPIO_EXTIFALL);
-//	iowrite32(0x00ff, pGPIOIRQ + GPIO_IEN);
+	iowrite32(0x00ff, pGPIOIRQ + GPIO_IEN);
+	iowrite32(0x2222222, pGPIOIRQ + GPIO_EXTIPSEL);
 	
 	
 	printk("Hello World, here is your module speaking\n");
@@ -103,6 +112,7 @@ static int __init template_init(void)
 
 irqreturn_t gpio_interrupt_handler(int irq, void* dev_id, struct pt_regs* regs){
 	iowrite32(0xff, pGPIOIRQ + GPIO_IFC);
+	printk("GPIO interrupt received");
 }
 
 /*
