@@ -4,6 +4,6 @@
 int initialize_board();
 int move_right_pong(int by);
 int move_left_pong(int by);
-int move_ball(int by);
+int move_ball();
 
 #endif // GRAPHICS_H_

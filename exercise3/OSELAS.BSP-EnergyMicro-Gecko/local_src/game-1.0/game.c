@@ -6,10 +6,15 @@
 #include <unistd.h>
 #include "pong_graphics.h"
 #include <signal.h>
+#include <stdbool.h>
+
 //FILE* device;
 int device;
 bool buttons_pressed[8];
 void gamepad_interrupt_handler(int);
+bool isPressed(int key);
+int gamepad_init();
+void refresh();
 
 int main(int argc, char *argv[])
 {
@@ -26,8 +31,12 @@ int main(int argc, char *argv[])
 //	}else {
 //		printf("initialize board equals -1\n");
 //	}
+    initialize_board();
 	gamepad_init();
+	initialize_board();
 	while(true){
+	    refresh();
+	    usleep(16667);
 	}
 	exit(EXIT_SUCCESS);
 	
@@ -57,17 +66,38 @@ int gamepad_init(){
 }
 
 void gamepad_interrupt_handler(int signo){
-	printf("Received interrupt\n");
-	for(int i = 0; i <8; i++){
-		button_array[i] = isPressed(i);
+	int i;
+	for(i = 0; i <8; i++){
+		buttons_pressed[i] = isPressed(i);
 	}
 }
 
 
+void refresh(){
+    int i;
+    for(i = 0; i < 8; i++){
+        if (buttons_pressed[i]) { 
+            if(i == 5){
+            	move_right_pong(10);
+            }
+            if(i == 7){
+            	move_right_pong(-10);
+            }
+            if(i == 1){
+            	move_left_pong(10);
+            }
+            if(i == 3){
+            	move_left_pong(-10);
+            }
+           }
+    }
+    move_ball();
+}
+
 bool isPressed(int key){
 	char buttons;
-	read(device, buttons, 1);
-	if( buttond >> key)
+	read(device, &buttons, 1);
+	if( !( (buttons >> key) % 2))
 		return true;
 	else
 		return false;

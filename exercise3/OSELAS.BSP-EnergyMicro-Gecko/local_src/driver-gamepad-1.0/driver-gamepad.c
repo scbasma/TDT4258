@@ -122,11 +122,9 @@ static int __init template_init(void)
 
 irqreturn_t gpio_interrupt_handler(int irq, void* dev_id, struct pt_regs* regs){
 	iowrite32(0xff, pGPIOIRQ + GPIO_IFC);
-	printk("inside gpio interrupt handler\n");
 	button_array = ioread32(pGPIOPC + GPIO_DIN);
-	printk("async_queue is : %x\n", async_queue);
+	printk("button_array is : %x\n", button_array);
 	if(async_queue){
-		printk("Inside if async_queue\n");
 		kill_fasync(&async_queue, SIGIO, POLL_IN);
 	}
 	return IRQ_HANDLED;
@@ -153,7 +151,7 @@ static void __exit template_cleanup(void)
 }
 
 static ssize_t gamepad_read(struct file *filp, char __user *buff, size_t count, loff_t *offp){
-	copy_to_user(buff, button_array, 1);
+	copy_to_user(buff, &button_array, 1);
 	return 1;
 }
 
