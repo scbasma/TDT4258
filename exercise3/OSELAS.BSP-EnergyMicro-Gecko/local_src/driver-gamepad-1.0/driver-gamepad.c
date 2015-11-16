@@ -123,7 +123,6 @@ static int __init template_init(void)
 irqreturn_t gpio_interrupt_handler(int irq, void* dev_id, struct pt_regs* regs){
 	iowrite32(0xff, pGPIOIRQ + GPIO_IFC);
 	button_array = ioread32(pGPIOPC + GPIO_DIN);
-	printk("button_array is : %x\n", button_array);
 	if(async_queue){
 		kill_fasync(&async_queue, SIGIO, POLL_IN);
 	}
@@ -133,7 +132,6 @@ irqreturn_t gpio_interrupt_handler(int irq, void* dev_id, struct pt_regs* regs){
 
 static int gamepad_fasync(int fd, struct file* filp, int mode){
 	//async_queue = filp->private_data->async_queue;
-	printk("Inside gamepad fasync\n");
 	return fasync_helper(fd, filp, mode, &async_queue);
 }
 
